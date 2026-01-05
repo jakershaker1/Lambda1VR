@@ -176,7 +176,7 @@ void HandleInput_OneController( ovrInputStateTrackedRemote *pDominantTrackedRemo
             rotation[PITCH] = 25.0f;
             vec3_t inverseflashlightangles;
             QuatToYawPitchRoll(pOffTracking->Pose.orientation, rotation, inverseflashlightangles);
-            if (vr_reversetorch->integer)
+            if (vr_reversetorch->integer && cl.frame.client.flags & FL_HAS_FLASHLIGHT)
             {
                 VectorNegate(inverseflashlightangles, flashlightangles);
                 flashlightangles[YAW] *= -1.0f;
@@ -193,7 +193,7 @@ void HandleInput_OneController( ovrInputStateTrackedRemote *pDominantTrackedRemo
 		{
 			//This section corrects for the fact that the controller actually controls direction of movement, but we want to move relative to the direction the
 			//player is facing for positional tracking
-			float multiplier = vr_positional_factor->value / (cl_forwardspeed->value *
+			float multiplier = (vr_positional_factor->value * (vr_refresh->value / 72.f)) / (cl_forwardspeed->value *
 					((pOffTrackedRemoteNew->Buttons & xrButton_Trigger) ? cl_movespeedkey->value : 1.0f));
 
 			//If player is ducked then multiply by 3 otherwise positional tracking feels very wrong

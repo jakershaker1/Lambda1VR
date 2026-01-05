@@ -3059,7 +3059,9 @@ void SV_SetStringArrayMode( qboolean dynamic )
 
 #ifdef XASH_64BIT
 #ifndef _WIN32
-#define USE_MMAP
+//We don't want to use this as sometimes if causes a hang on the start of the game..
+//seems to work fine without it! (hopefully!!)
+//#define USE_MMAP
 #include <sys/mman.h>
 #endif
 #endif

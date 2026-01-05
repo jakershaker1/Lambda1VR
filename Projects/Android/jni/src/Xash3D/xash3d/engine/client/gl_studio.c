@@ -3726,7 +3726,10 @@ extern convar_t	*vr_mirror_weapons;
 extern convar_t	*vr_weapon_backface_culling;
 int bScopeEngaged()
 {
-	return (cl.scr_fov != 0 &&	cl.scr_fov  < 90.0f);
+    return (cl.scr_fov != 0 &&
+            // Reducing this to 85 (from 90) fixes the issue where on the highest IPD setting on Quest 2 or Quest 3s
+            // the player's view is moved around by the right controller, it's because that was changing the FOV to 88!
+            cl.scr_fov  < 85.0f);
 }
 
 void R_DrawViewModel( void )
@@ -3794,8 +3797,15 @@ void R_DrawViewModel( void )
 
 extern convar_t	*vr_hand_model;
 extern convar_t	*vr_control_scheme;
+extern convar_t	*vr_reversetorch;
 
-void R_DrawHandModel( int hand )
+void getHandAdjustVector(vec3_t angles, vec3_t forward) {
+    AngleVectors(angles, forward, NULL, NULL);
+    VectorNegate(forward, forward);
+    VectorM(5, forward, forward);
+}
+
+void R_DrawHandModel(int hand )
 {
 	if( RI.refdef.onlyClientDraw || r_drawviewmodel->integer == 0 || vr_hand_model->integer == 0 || bScopeEngaged())
 		return;
@@ -3841,15 +3851,23 @@ void R_DrawHandModel( int hand )
 	int off_hand = (vr_control_scheme->integer >= 10) ? 1 : 0;
 	if (hand == off_hand)
     {
-	    //Off hand
+        vec3_t forward;
+        getHandAdjustVector(cl.refdef.flashlight.angles.adjusted, forward);
+        //Off hand
 	    VectorAdd(cl.refdef.vieworg, cl.refdef.flashlight.org, clgame.handent.origin);
+	    VectorAdd(clgame.handent.origin, forward, clgame.handent.origin);
         VectorCopy(cl.refdef.flashlight.angles.adjusted, clgame.handent.curstate.angles);
         clgame.handent.curstate.angles[0] *= -1.0f;
     } else
     {
+        VectorCopy(cl.refdef.weapon.angles.unadjusted, clgame.handent.curstate.angles);
+        clgame.handent.curstate.angles[0] *= -1.0f;
+        vec3_t forward;
+        getHandAdjustVector(clgame.handent.curstate.angles, forward);
 	    //Dominant hand
         VectorAdd(cl.refdef.vieworg, cl.refdef.weapon.org, clgame.handent.origin);
-        VectorCopy(cl.refdef.weapon.angles.adjusted, clgame.handent.curstate.angles);
+        VectorAdd(clgame.handent.origin, forward, clgame.handent.origin);
+        clgame.handent.curstate.angles[0] *= -1.0f;
     }
 
 	//Optional culling for the viewmodel

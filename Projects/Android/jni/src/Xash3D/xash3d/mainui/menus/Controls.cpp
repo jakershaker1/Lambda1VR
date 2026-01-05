@@ -70,6 +70,7 @@ private:
     CMenuCheckBox	handModels;
     CMenuCheckBox	quickCrouchJump;
     CMenuCheckBox	useGesture;
+    CMenuCheckBox	smoothTurn;
     CMenuSlider	snapTurnAngle;
     CMenuSlider useGestureBoundary;
 
@@ -109,37 +110,41 @@ void CMenuControls::_Init( void )
     quickCrouchJump.LinkCvar( "vr_quick_crouchjump" );
 
     mirrorWeapons.SetNameAndStatus( "Mirror Weapon Models", "Check to mirror weapon models (for left-handed play to avoid seeing missing sides)" );
-    mirrorWeapons.SetCoord( 320, 510 );
+    mirrorWeapons.SetCoord( 320, 500 );
     mirrorWeapons.LinkCvar( "vr_mirror_weapons" );
 
     handModels.SetNameAndStatus( "Draw Hand Models", "Check to enable controllers rendered as hand models" );
-    handModels.SetCoord( 720, 510 );
+    handModels.SetCoord( 720, 500 );
     handModels.LinkCvar( "vr_hand_model" );
 
     headTorch.SetNameAndStatus( "Head-based Torch", "Check to enable head-torch (Half-life & Blueshift only)" );
-    headTorch.SetCoord( 320, 570 );
+    headTorch.SetCoord( 320, 550 );
     headTorch.LinkCvar( "vr_headtorch" );
 
-    reverseTorch.SetNameAndStatus( "Reverse Torch Direction", "Check to reverse torch direction" );
-    reverseTorch.SetCoord( 320, 640 );
-    reverseTorch.LinkCvar( "vr_reversetorch" );
-
     useGesture.SetNameAndStatus( "Gesture Triggered Use", "Toggles triggering of use action by gesture" );
-    useGesture.SetCoord( 720, 570 );
+    useGesture.SetCoord( 720, 550 );
     useGesture.LinkCvar( "vr_gesture_triggered_use" );
 
-    snapTurnAngle.SetNameAndStatus( "Snap/Smooth Turn: %.1f degrees", "Controller turn angle, < 10 is smooth turning per frame" );
+    reverseTorch.SetNameAndStatus( "Reverse Torch Direction", "Check to reverse torch direction" );
+    reverseTorch.SetCoord( 320, 600 );
+    reverseTorch.LinkCvar( "vr_reversetorch" );
+
+    smoothTurn.SetNameAndStatus( "Smooth Turn", "Toggles smooth turning" );
+    smoothTurn.SetCoord( 720, 600 );
+    smoothTurn.LinkCvar( "vr_smoothturn" );
+
+    snapTurnAngle.SetNameAndStatus( "Snap/Smooth Turn:", "Controller turn angle per frame" );
     snapTurnAngle.Setup( 0.0, 90.0, 1.0f );
     snapTurnAngle.onChanged = CMenuEditable::WriteCvarCb;
     snapTurnAngle.SetCoord( 320, 750 );
     snapTurnAngle.SetSize( 520, 40 );
     snapTurnAngle.SetDrawValue(true);
-    snapTurnAngle.LinkCvar("vr_snapturn_angle");
+    snapTurnAngle.LinkCvar("vr_turn_angle");
 
     useGestureBoundary.SetNameAndStatus( "Use Gesture Boundary", "Configures how far you need to reach to activate use gesture" );
     useGestureBoundary.Setup( 0.2, 0.5, 0.01f );
     useGestureBoundary.onChanged = CMenuEditable::WriteCvarCb;
-    useGestureBoundary.SetCoord( 320, 840 );
+    useGestureBoundary.SetCoord( 320, 850 );
     useGestureBoundary.SetSize( 520, 40 );
     useGestureBoundary.SetDrawValue(true);
     useGestureBoundary.LinkCvar("vr_use_gesture_boundary");
@@ -152,6 +157,7 @@ void CMenuControls::_Init( void )
     AddItem( reverseTorch );
     AddItem( handModels );
     AddItem( snapTurnAngle );
+    AddItem( smoothTurn );
     AddItem( useGesture );
     AddItem( useGestureBoundary );
 
@@ -185,6 +191,7 @@ void CMenuControls::SetConfig( )
     reverseTorch.WriteCvar();
     handModels.WriteCvar();
     snapTurnAngle.WriteCvar();
+    smoothTurn.WriteCvar();
     useGesture.WriteCvar();
     useGestureBoundary.WriteCvar();
 

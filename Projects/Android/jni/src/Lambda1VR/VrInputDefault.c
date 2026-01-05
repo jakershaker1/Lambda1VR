@@ -339,7 +339,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 			rotation[PITCH] = 25.0f;
 			vec3_t inverseflashlightangles;
 			QuatToYawPitchRoll(pOffTracking->Pose.orientation, rotation, inverseflashlightangles);
-			if (vr_reversetorch->integer)
+			if (vr_reversetorch->integer && cl.frame.client.flags & FL_HAS_FLASHLIGHT)
 			{
 				VectorNegate(inverseflashlightangles, flashlightangles);
 				flashlightangles[YAW] *= -1.0f;
@@ -361,7 +361,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 		{
 			//This section corrects for the fact that the controller actually controls direction of movement, but we want to move relative to the direction the
 			//player is facing for positional tracking
-			float multiplier = vr_positional_factor->value / (cl_forwardspeed->value *
+			float multiplier = (vr_positional_factor->value * (vr_refresh->value / 72.f)) / (cl_forwardspeed->value *
 					((pOffTrackedRemoteNew->Buttons & xrButton_Trigger) ? cl_movespeedkey->value : 1.0f));
 
 			//If player is ducked then multiply by 3 otherwise positional tracking feels very wrong
@@ -463,7 +463,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
 			//Weapon Chooser
 			static bool weaponSwitched = false;
-			if (vr_snapturn_angle->value != 0) // if snap angle feature is enabled
+			if (vr_turn_angle->value != 0) // if snap angle feature is enabled
 			{
 				if (between(0.6f, pDominantTrackedRemoteNew->Joystick.y, 1.0f) ||
 						between(-1.0f, pDominantTrackedRemoteNew->Joystick.y, -0.6f))
@@ -617,7 +617,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 			float joystickX = (joyx[0] + joyx[1] + joyx[2] + joyx[3]) / 4.0f;
 
 			//engage comfort mask if using smooth rotation
-            player_moving |= (vr_snapturn_angle->value <= 10.0f &&
+            player_moving |= (vr_smoothturn->value &&
 				fabs(joystickX) > 0.6f);
 
 			static bool increaseSnap = true;
@@ -625,8 +625,8 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 			{
 				if (increaseSnap)
 				{
-					snapTurn -= vr_snapturn_angle->value;
-					if (vr_snapturn_angle->value > 10.0f) {
+					snapTurn -= vr_turn_angle->value / (vr_smoothturn->value ? 10.f : 1.f);
+					if (!vr_smoothturn->value) {
 						increaseSnap = false;
 					}
 
@@ -644,10 +644,10 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 			{
 				if (decreaseSnap)
 				{
-					snapTurn += vr_snapturn_angle->value;
+					snapTurn += vr_turn_angle->value / (vr_smoothturn->value ? 10.f : 1.f);
 
 					//If snap turn configured for less than 10 degrees
-					if (vr_snapturn_angle->value > 10.0f) {
+					if (!vr_smoothturn->value) {
 						decreaseSnap = false;
 					}
 

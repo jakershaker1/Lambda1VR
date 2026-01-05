@@ -138,34 +138,23 @@ void interactWithTouchScreen(ovrTrackedController *tracking, ovrInputStateTracke
     float remoteAngles[3];
     vec3_t rotation = {0, 0, 0};
     QuatToYawPitchRoll(tracking->Pose.orientation, rotation, remoteAngles);
-    float yaw = remoteAngles[YAW] - playerYaw;
 
-    //Adjust for maximum yaw values
-    if (yaw >= 180.0f) yaw -= 180.0f;
-    if (yaw <= -180.0f) yaw += 180.0f;
+    int newRemoteTrigState = (newState->Buttons & xrButton_Trigger) != 0;
+    int prevRemoteTrigState = (oldState->Buttons & xrButton_Trigger) != 0;
 
-    if (yaw > -40.0f && yaw < 40.0f &&
-        remoteAngles[PITCH] > -22.5f && remoteAngles[PITCH] < 22.5f) {
-
-        int newRemoteTrigState = (newState->Buttons & xrButton_Trigger) != 0;
-        int prevRemoteTrigState = (oldState->Buttons & xrButton_Trigger) != 0;
-
-        touchEventType t = event_motion;
-
-        float touchX = (-yaw + 40.0f) / 80.0f;
-        float touchY = (remoteAngles[PITCH] + 22.5f) / 45.0f;
-        if (newRemoteTrigState != prevRemoteTrigState)
+    float cursorX = -sinf(DEG2RAD(remoteAngles[YAW] - playerYaw)) + 0.5f;
+    float cursorY = (float)(remoteAngles[PITCH] / 90.0) + 0.5f;
+    touchEventType t = event_motion;
+    if (newRemoteTrigState != prevRemoteTrigState)
+    {
+        t = newRemoteTrigState ? event_down : event_up;
+        if (newRemoteTrigState)
         {
-            t = newRemoteTrigState ? event_down : event_up;
-            if (newRemoteTrigState)
-            {
-                initialTouchX = touchX;
-                initialTouchY = touchY;
-            }
+            initialTouchX = cursorX;
+            initialTouchY = cursorY;
         }
-
-        IN_TouchEvent(t, 0, touchX, touchY, initialTouchX - touchX, initialTouchY - touchY);
     }
+    IN_TouchEvent(t, 0, cursorX, cursorY, initialTouchX - cursorX, initialTouchY - cursorY);
 }
 
 

@@ -155,7 +155,10 @@ void V_SetupRefDef( void )
 	VectorCopy(weaponangles[2], cl.refdef.weapon.angles.melee);
 
 	//Scope
-	if (cl.scr_fov < 90) {
+    // Reducing this to 85 (from 90) fixes the issue where on the highest IPD setting on Quest 2 or Quest 3s
+    // the player's view is moved around by the right controller, it's because that was changing the FOV to 88!
+	if (cl.scr_fov < 85)
+    {
 		VectorAdd(cl.refdef.simorg, cl.refdef.weapon.org, cl.refdef.simorg);
 		VectorSet(cl.refdef.weapon.org, 0, 0, 0);
 	}

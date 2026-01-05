@@ -2,7 +2,8 @@
 #include <common/cvardef.h>
 #include <common/xash3d_types.h>
 
-extern convar_t	*vr_snapturn_angle;
+extern convar_t	*vr_smoothturn;
+extern convar_t	*vr_turn_angle;
 extern convar_t	*vr_reloadtimeoutms;
 extern convar_t	*vr_positional_factor;
 extern convar_t	*vr_walkdirection;

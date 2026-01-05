@@ -326,7 +326,7 @@ void HandleInput_Alt( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovr
 			rotation[PITCH] = 25.0f;
 			vec3_t inverseflashlightangles;
 			QuatToYawPitchRoll(pOffTracking->Pose.orientation, rotation, inverseflashlightangles);
-			if (vr_reversetorch->integer)
+			if (vr_reversetorch->integer && cl.frame.client.flags & FL_HAS_FLASHLIGHT)
 			{
 				VectorNegate(inverseflashlightangles, flashlightangles);
 				flashlightangles[YAW] *= -1.0f;
@@ -349,7 +349,7 @@ void HandleInput_Alt( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovr
 		{
 			//This section corrects for the fact that the controller actually controls direction of movement, but we want to move relative to the direction the
 			//player is facing for positional tracking
-			float multiplier = vr_positional_factor->value / (cl_forwardspeed->value *
+			float multiplier = (vr_positional_factor->value * (vr_refresh->value / 72.f)) / (cl_forwardspeed->value *
 					((pOffTrackedRemoteNew->Buttons & xrButton_Trigger) ? cl_movespeedkey->value : 1.0f));
 
 			//If player is ducked then multiply by 3 otherwise positional tracking feels very wrong
@@ -601,15 +601,15 @@ void HandleInput_Alt( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovr
             if (!selectingWeapon) {
 
                 //engage comfort mask if using smooth rotation
-                player_moving |= (vr_snapturn_angle->value <= 10.0f &&
+                player_moving |= (vr_smoothturn->value &&
                                   fabs(joystickX) > 0.7f);
 
 				if (joystickX > 0.7f)
 				{
 					if (increaseSnap)
 					{
-						snapTurn -= vr_snapturn_angle->value;
-						if (vr_snapturn_angle->value > 10.0f) {
+						snapTurn -= vr_turn_angle->value / (vr_smoothturn->value ? 10.f : 1.f);
+						if (!vr_smoothturn->value) {
 							increaseSnap = false;
 						}
 
@@ -629,10 +629,10 @@ void HandleInput_Alt( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovr
 				{
 					if (decreaseSnap)
 					{
-						snapTurn += vr_snapturn_angle->value;
+						snapTurn += vr_turn_angle->value / (vr_smoothturn->value ? 10.f : 1.f);
 
 						//If snap turn configured for less than 10 degrees
-						if (vr_snapturn_angle->value > 10.0f) {
+						if (!vr_smoothturn->value) {
 							decreaseSnap = false;
 						}
 

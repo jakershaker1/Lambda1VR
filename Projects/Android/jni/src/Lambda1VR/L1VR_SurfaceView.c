@@ -316,7 +316,8 @@ void Android_MessageBox(const char *title, const char *text)
 
 
 convar_t 	*vibration_enable;
-convar_t	*vr_snapturn_angle;
+convar_t	*vr_smoothturn;
+convar_t	*vr_turn_angle;
 convar_t	*vr_reloadtimeoutms;
 convar_t	*vr_positional_factor;
 convar_t	*vr_walkdirection;
@@ -366,7 +367,8 @@ void VR_Init()
 	srand(time(NULL));
 
 	//Create Cvars
-	vr_snapturn_angle = Cvar_Get( "vr_snapturn_angle", "45", CVAR_ARCHIVE, "Sets the angle for snap-turn, set to < 10.0 to enable smooth turning" );
+    vr_smoothturn = Cvar_Get( "vr_smoothturn", "0", CVAR_ARCHIVE, "Enables smooth turning" );
+	vr_turn_angle = Cvar_Get( "vr_turn_angle", "45", CVAR_ARCHIVE, "Sets the angle for snap-turn, set to < 10.0 to enable smooth turning" );
 	vr_reloadtimeoutms = Cvar_Get( "vr_reloadtimeoutms", "200", CVAR_ARCHIVE, "How quickly the grip trigger needs to be release to initiate a reload" );
 	vr_positional_factor = Cvar_Get( "vr_positional_factor", "3000", CVAR_ARCHIVE, "Number that makes positional tracking work" );
     vr_walkdirection = Cvar_Get( "vr_walkdirection", "1", CVAR_ARCHIVE, "1 - Use HMD for direction, 0 - Use off-hand controller for direction" );
@@ -401,7 +403,7 @@ void VR_Init()
 	vr_headtorch = Cvar_Get( "vr_headtorch", "0", CVAR_ARCHIVE, "Set to 1 to enable head-torch flashlight mode" );
 	vr_reversetorch = Cvar_Get( "vr_reversetorch", "0", CVAR_ARCHIVE, "Set to 1 to enable reverse-direction flashlight mode" );
     vr_quick_crouchjump = Cvar_Get( "vr_quick_crouchjump", "1", CVAR_ARCHIVE, "Set to 0 to disable quick crouch-jump mode (double clicking jump button triggers duck)" );
-    vr_gesture_triggered_use = Cvar_Get( "vr_gesture_triggered_use", "0", CVAR_ARCHIVE, "Set to 0 to disable use gesture, 1 to enable" );
+    vr_gesture_triggered_use = Cvar_Get( "vr_gesture_triggered_use", "1", CVAR_ARCHIVE, "Set to 0 to disable use gesture, 1 to enable" );
     vr_use_gesture_boundary = Cvar_Get( "vr_use_gesture_boundary", "0.35", CVAR_ARCHIVE, "Use gesture boundary" );
 
     //Not to be changed by users, as it will be overwritten anyway
