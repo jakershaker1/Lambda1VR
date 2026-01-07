@@ -173,6 +173,21 @@ import static android.system.Os.setenv;
 		copy_asset("/sdcard/xash/" + game + "/", "sprites/pointer.tga", true);
 		copy_asset("/sdcard/xash/valve/", "sprites/pointer.tga", true);
 
+		//Menu Background
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_1_a_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_1_b_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_1_c_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_1_d_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_2_a_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_2_b_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_2_c_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_2_d_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_3_a_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_3_b_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_3_c_loading.tga", true);
+		copy_asset("/sdcard/xash/valve/resource/", "background/800_3_d_loading.tga", true);
+
+
 		//Copy modified weapon models - This is the base set
 		if (!(new File("/sdcard/xash/" + game + "/models/no_copy").exists()) && !(game.equalsIgnoreCase("Hunger")))
 		{
