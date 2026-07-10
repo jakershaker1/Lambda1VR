@@ -262,6 +262,7 @@ void HandleInput_Alt2( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ov
 				sendButtonActionSimple("-reload");
 				finishReloadNextFrame = false;
 			}
+			updateHalfLifePistolReloadState();
 
 			if (!isBackpack(pDominantTracking)) {
 				canUseBackpack = false;
@@ -431,6 +432,9 @@ void HandleInput_Alt2( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ov
 				//Fire Secondary
 				if ((pDominantTrackedRemoteNew->Buttons & xrButton_Trigger) !=
 					(pDominantTrackedRemoteOld->Buttons & xrButton_Trigger)) {
+					if (pDominantTrackedRemoteNew->Buttons & xrButton_Trigger) {
+						cancelReloadIfInProgress();
+					}
 
 					sendButtonAction("+attack2", (pDominantTrackedRemoteNew->Buttons & xrButton_Trigger));
 				}
@@ -440,6 +444,9 @@ void HandleInput_Alt2( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ov
 				//Fire Primary
 				if ((pDominantTrackedRemoteNew->Buttons & xrButton_Trigger) !=
 					(pDominantTrackedRemoteOld->Buttons & xrButton_Trigger)) {
+					if (pDominantTrackedRemoteNew->Buttons & xrButton_Trigger) {
+						cancelReloadIfInProgress();
+					}
 
 					firingPrimary = (pDominantTrackedRemoteNew->Buttons & xrButton_Trigger);
 					sendButtonAction("+attack", firingPrimary);

@@ -126,6 +126,7 @@ void HandleInput_OneController( ovrInputStateTrackedRemote *pDominantTrackedRemo
 				sendButtonActionSimple("-reload");
 				finishReloadNextFrame = false;
 			}
+			updateHalfLifePistolReloadState();
 
 			if ((pDominantTrackedRemoteNew->Buttons & xrButton_GripTrigger) !=
 				(pDominantTrackedRemoteOld->Buttons & xrButton_GripTrigger)) {
@@ -289,6 +290,9 @@ void HandleInput_OneController( ovrInputStateTrackedRemote *pDominantTrackedRemo
             //Fire Primary
             if ((pDominantTrackedRemoteNew->Buttons & xrButton_Trigger) !=
                 (pDominantTrackedRemoteOld->Buttons & xrButton_Trigger)) {
+                if (pDominantTrackedRemoteNew->Buttons & xrButton_Trigger) {
+                    cancelReloadIfInProgress();
+                }
 
                 bool firingPrimary = (pDominantTrackedRemoteNew->Buttons & xrButton_Trigger);
                 sendButtonAction("+attack", firingPrimary);
@@ -365,6 +369,9 @@ void HandleInput_OneController( ovrInputStateTrackedRemote *pDominantTrackedRemo
                 //Fire Secondary
                 if ((pDominantTrackedRemoteNew->Buttons & domButton2) !=
                     (pDominantTrackedRemoteOld->Buttons & domButton2)) {
+                    if (pDominantTrackedRemoteNew->Buttons & domButton2) {
+                        cancelReloadIfInProgress();
+                    }
 
                     firingSecondary = (pDominantTrackedRemoteNew->Buttons & domButton2) > 0;
                     sendButtonAction("+attack2", (pDominantTrackedRemoteNew->Buttons & domButton2));

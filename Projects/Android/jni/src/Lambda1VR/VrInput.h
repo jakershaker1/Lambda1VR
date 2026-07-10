@@ -27,6 +27,8 @@ extern float snapTurn;
 
 void sendButtonAction(const char* action, long buttonDown);
 void sendButtonActionSimple(const char* action);
+void cancelReloadIfInProgress(void);
+void updateHalfLifePistolReloadState(void);
 
 void rotateAboutOrigin(float x, float y, float rotation, vec2_t out);
 
@@ -55,4 +57,3 @@ bool isBackpack(ovrTrackedController* pTracking);
 extern char * g_pszBackpackWeapon;
 
 #endif //VRINPUT_H
-

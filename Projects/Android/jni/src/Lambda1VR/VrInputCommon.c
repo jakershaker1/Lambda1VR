@@ -130,6 +130,69 @@ void sendButtonAction(const char* action, long buttonDown)
 
 }
 
+static qboolean isHalfLifePistolWeapon(const weapon_data_t* weaponData)
+{
+    if (weaponData == NULL)
+    {
+        return false;
+    }
+
+    return (weaponData->m_iId == 2 || weaponData->m_iId == 3);
+}
+
+static weapon_data_t* getActiveWeaponData(void)
+{
+    const int weaponId = cl.frame.client.m_iId;
+    if (weaponId <= 0 || weaponId >= 64)
+    {
+        return NULL;
+    }
+
+    return &cl.frame.weapondata[weaponId];
+}
+
+void cancelReloadIfInProgress(void)
+{
+    weapon_data_t* weaponData = getActiveWeaponData();
+    if (weaponData != NULL && weaponData->m_fInReload)
+    {
+        sendButtonActionSimple("-reload");
+    }
+}
+
+void updateHalfLifePistolReloadState(void)
+{
+    static int previousWeaponId = 0;
+    static int previousClip = -1;
+    static qboolean previousInReload = false;
+
+    weapon_data_t* weaponData = getActiveWeaponData();
+    const int weaponId = cl.frame.client.m_iId;
+
+    if (!isHalfLifePistolWeapon(weaponData))
+    {
+        previousWeaponId = weaponId;
+        previousClip = (weaponData != NULL) ? weaponData->m_iClip : -1;
+        previousInReload = (weaponData != NULL) ? weaponData->m_fInReload : false;
+        return;
+    }
+
+    const qboolean inReload = weaponData->m_fInReload != 0;
+    if (inReload &&
+        previousInReload &&
+        previousWeaponId == weaponId &&
+        previousClip > 0 &&
+        weaponData->m_iClip > previousClip)
+    {
+        // Tactical reload complete: skip the remaining rack requirement.
+        sendButtonActionSimple("-reload");
+    }
+
+    previousWeaponId = weaponId;
+    previousClip = weaponData->m_iClip;
+    previousInReload = inReload;
+}
+
 int IN_TouchEvent( touchEventType type, int fingerID, float x, float y, float dx, float dy );
 
 extern float initialTouchX, initialTouchY;
