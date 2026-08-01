@@ -1,3 +1,4 @@
+#include <string.h>
 #include "VrCommon.h"
 
 extern ovrApp gAppState;

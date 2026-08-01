@@ -12,12 +12,32 @@
 	<uses-feature android:name="android.hardware.vr.headtracking" android:version="1"
 		android:required="true" />
 
+	<!-- Android XR: declare this as an OpenXR 1.1 app -->
+	<uses-feature
+		android:name="android.software.xr.api.openxr"
+		android:version="0x00010001"
+		android:required="false" />
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
 		tools:ignore="AllFilesAccessPolicy,ScopedStorage" />
+
+	<!-- Generic Khronos OpenXR loader broker discovery (needed since we link the -->
+	<!-- portable OpenXR-SDK loader rather than Meta/Pico's own loader binaries) -->
+	<uses-permission android:name="org.khronos.openxr.permission.OPENXR" />
+	<uses-permission android:name="org.khronos.openxr.permission.OPENXR_SYSTEM" />
+
+	<queries>
+		<provider android:authorities="org.khronos.openxr.runtime_broker;org.khronos.openxr.system_runtime_broker" />
+		<intent>
+			<action android:name="org.khronos.openxr.OpenXRRuntimeService" />
+		</intent>
+		<intent>
+			<action android:name="org.khronos.openxr.OpenXRApiLayerService" />
+		</intent>
+	</queries>
 
 
 	<application android:allowBackup="false"
@@ -40,6 +60,14 @@
 		<!-- PICO XR -->
 		<meta-data android:name="pvr.app.type" android:value="vr" />
 
+		<!-- Android XR: run as a fully immersive, self-managed OpenXR app -->
+		<property
+			android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
+			android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED" />
+		<uses-native-library
+			android:name="libopenxr.google.so"
+			android:required="false" />
+
 		<activity
 			android:exported="true"
 			android:name="com.drbeef.lambda1vr.GLES3JNIActivity"
@@ -55,6 +83,7 @@
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
 			</intent-filter>
 		</activity>
 	</application>

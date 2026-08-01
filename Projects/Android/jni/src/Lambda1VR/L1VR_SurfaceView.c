@@ -247,8 +247,7 @@ bool VR_GetVRProjection(int eye, float zNear, float zFar, float* projection)
 				&(gAppState.ProjectionMatrices[eye]), GRAPHICS_OPENGL_ES,
 				gAppState.Projections[eye].fov, zNear, zFar);
 	}
-
-	if (strstr(gAppState.OpenXRHMD, "meta") != NULL)
+	else if (strstr(gAppState.OpenXRHMD, "meta") != NULL)
 	{
 		XrFovf fov = {};
 		for (int eye = 0; eye < ovrMaxNumEyes; eye++)
@@ -261,6 +260,18 @@ bool VR_GetVRProjection(int eye, float zNear, float zFar, float* projection)
 		XrMatrix4x4f_CreateProjectionFov(
 				&(gAppState.ProjectionMatrices[eye]), GRAPHICS_OPENGL_ES,
 				fov, zNear, zFar);
+	}
+	else
+	{
+		// Generic path for any other OpenXR runtime (e.g. Android XR): use this
+		// eye's own FOV directly, same as the Pico path. Without this, no
+		// manufacturer branch above matches and ProjectionMatrices[eye] is never
+		// computed at all - the memcpy below would copy stale/garbage data,
+		// producing a degenerate projection that makes all 3D world geometry
+		// invisible while unrelated 2D UI (which doesn't use this matrix) still renders.
+		XrMatrix4x4f_CreateProjectionFov(
+				&(gAppState.ProjectionMatrices[eye]), GRAPHICS_OPENGL_ES,
+				gAppState.Projections[eye].fov, zNear, zFar);
 	}
 
 	memcpy(projection, gAppState.ProjectionMatrices[eye].m, 16 * sizeof(float));
@@ -523,6 +534,16 @@ void * AppThreadFunction( void * parm )
 
 					if (gAppState.FrameState.shouldRender)
 					{
+						// Expose this eye's asymmetric-frustum skew via a cvar so the
+						// client DLL (a separate module, only reachable via cvars/engine
+						// calls) can apply the same HUD convergence correction the
+						// engine's own 2D drawing uses (see GetStereoDepthOffset).
+						{
+							char skewBuffer[32];
+							Q_snprintf(skewBuffer, sizeof(skewBuffer), "%f", TBXR_GetEyeFovSkew(eye));
+							Cvar_Set2("vr_eye_fov_skew", skewBuffer, true);
+						}
+
 						if (isScopeEngaged())
 						{
 							//Now do the drawing for this eye - Force the set as it is a "read only" cvar

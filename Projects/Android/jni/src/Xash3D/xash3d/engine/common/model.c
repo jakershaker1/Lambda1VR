@@ -3020,6 +3020,11 @@ model_t *Mod_LoadModel( model_t *mod, qboolean crash )
 	if( mod->mempool || mod->name[0] == '*' )
 		return mod;
 
+	// this model already failed to load this level - don't hit the
+	// filesystem again every time something asks for it (e.g. a per-frame caller)
+	if( mod->type == mod_bad && mod->needload == world.load_sequence )
+		return NULL;
+
 	// store modelname to show error
 	Q_strncpy( tempname, mod->name, sizeof( tempname ));
 	COM_FixSlashes( tempname );
@@ -3028,7 +3033,10 @@ model_t *Mod_LoadModel( model_t *mod, qboolean crash )
 
 	if( !buf )
 	{
-		Q_memset( mod, 0, sizeof( model_t ));
+		// remember the failure (keep the name so Mod_FindName finds this same
+		// slot again) instead of wiping the whole struct and retrying from scratch
+		mod->type = mod_bad;
+		mod->needload = world.load_sequence;
 
 		if( crash ) Host_MapDesignError( "Mod_ForName: %s couldn't load\n", tempname );
 		else MsgDev( D_ERROR, "Mod_ForName: %s couldn't load\n", tempname );

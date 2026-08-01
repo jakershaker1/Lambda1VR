@@ -3885,7 +3885,6 @@ void R_DrawHandModel(int hand )
         Cvar_Set2("vr_mirror_weapons", mirror != 0.0 ? "1" : "0", true);
     }
 
-
 	// backface culling for left-handed weapons
 	g_iBackFaceCull = false; // GL_FrontFace is called in RestoreStudioRenderer
 

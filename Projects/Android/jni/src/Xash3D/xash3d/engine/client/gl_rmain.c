@@ -600,14 +600,22 @@ void R_SetupFrustum( void )
 		return;
 	}
 
+	// Pad the FOV used for visibility culling only (RI.refdef.fov_x/fov_y themselves
+	// are left untouched since they also drive weapon scope zoom / HUD elsewhere).
+	// VR rendering uses an asymmetric per-eye projection that's wider on the outward
+	// side than this symmetric culling test assumes; without padding, real visible
+	// geometry near the outer edge of view gets culled and pops in late.
+	float cullFovX = RI.refdef.fov_x * 1.25f;
+	float cullFovY = RI.refdef.fov_y * 1.25f;
+
 	// rotate RI.vforward right by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[0].normal, RI.cull_vup, RI.cull_vforward, -( 90 - RI.refdef.fov_x / 2 ));
+	RotatePointAroundVector( RI.frustum[0].normal, RI.cull_vup, RI.cull_vforward, -( 90 - cullFovX / 2 ));
 	// rotate RI.vforward left by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[1].normal, RI.cull_vup, RI.cull_vforward, 90 - RI.refdef.fov_x / 2 );
+	RotatePointAroundVector( RI.frustum[1].normal, RI.cull_vup, RI.cull_vforward, 90 - cullFovX / 2 );
 	// rotate RI.vforward up by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[2].normal, RI.cull_vright, RI.cull_vforward, 90 - RI.refdef.fov_y / 2 );
+	RotatePointAroundVector( RI.frustum[2].normal, RI.cull_vright, RI.cull_vforward, 90 - cullFovY / 2 );
 	// rotate RI.vforward down by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[3].normal, RI.cull_vright, RI.cull_vforward, -( 90 - RI.refdef.fov_y / 2 ));
+	RotatePointAroundVector( RI.frustum[3].normal, RI.cull_vright, RI.cull_vforward, -( 90 - cullFovY / 2 ));
 	// negate forward vector
 	VectorNegate( RI.cull_vforward, RI.frustum[4].normal );
 
@@ -1135,7 +1143,7 @@ void R_DrawEntitiesOnList( void )
 
 		RI.currententity = tr.solid_entities[i];
 		RI.currentmodel = RI.currententity->model;
-	
+
 		ASSERT( RI.currententity != NULL );
 		ASSERT( RI.currententity->model != NULL );
 
@@ -1181,7 +1189,7 @@ void R_DrawEntitiesOnList( void )
 
 		RI.currententity = tr.trans_entities[i];
 		RI.currentmodel = RI.currententity->model;
-	
+
 		ASSERT( RI.currententity != NULL );
 		ASSERT( RI.currententity->model != NULL );
 

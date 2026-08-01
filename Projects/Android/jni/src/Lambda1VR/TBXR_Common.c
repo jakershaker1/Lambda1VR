@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <time.h>
@@ -119,11 +120,22 @@ const char* const requiredExtensionNames_pico[] = {
 		XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME,
 		XR_PICO_CONFIGS_EXT_EXTENSION_NAME};
 
+// Vendor-neutral extension set for any OpenXR runtime that isn't specifically
+// Meta or Pico (e.g. Android XR). Only Khronos-ratified extensions that this
+// codebase actually uses - no vendor-specific extensions (FB_*, PICO_*) that
+// other runtimes won't support.
+const char* const requiredExtensionNames_generic[] = {
+		XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME,
+		XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME,
+		XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME};
+
 
 const uint32_t numRequiredExtensions_meta =
         sizeof(requiredExtensionNames_meta) / sizeof(requiredExtensionNames_meta[0]);
 const uint32_t numRequiredExtensions_pico =
         sizeof(requiredExtensionNames_pico) / sizeof(requiredExtensionNames_pico[0]);
+const uint32_t numRequiredExtensions_generic =
+        sizeof(requiredExtensionNames_generic) / sizeof(requiredExtensionNames_generic[0]);
 
 
 /*
@@ -1353,7 +1365,7 @@ void TBXR_EnterVR( ) {
 	graphicsBindingAndroidGLES.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR;
 	graphicsBindingAndroidGLES.next = NULL;
 	graphicsBindingAndroidGLES.display = eglGetCurrentDisplay();
-	graphicsBindingAndroidGLES.config = eglGetCurrentSurface(EGL_DRAW);
+	graphicsBindingAndroidGLES.config = gAppState.Egl.Config;
 	graphicsBindingAndroidGLES.context = eglGetCurrentContext();
 
 	XrSessionCreateInfo sessionCreateInfo = {};
@@ -1594,10 +1606,15 @@ void TBXR_InitialiseOpenXR()
         instanceCreateInfo.enabledExtensionCount = numRequiredExtensions_meta;
         instanceCreateInfo.enabledExtensionNames = requiredExtensionNames_meta;
     }
-    else
+    else if (strstr(gAppState.OpenXRHMD, "pico") != NULL)
     {
         instanceCreateInfo.enabledExtensionCount = numRequiredExtensions_pico;
         instanceCreateInfo.enabledExtensionNames = requiredExtensionNames_pico;
+    }
+    else
+    {
+        instanceCreateInfo.enabledExtensionCount = numRequiredExtensions_generic;
+        instanceCreateInfo.enabledExtensionNames = requiredExtensionNames_generic;
     }
 
 	XrResult initResult;
@@ -1835,6 +1852,22 @@ int TBXR_GetRefresh()
 	return gAppState.currentDisplayRefreshRate;
 }
 
+// Returns how far off-center (as a fraction of half-width, -1..1) this eye's
+// asymmetric projection frustum is skewed. A 2D screen-space element (like the
+// HUD) drawn at the same NDC position in both eyes will point in a slightly
+// different real-world direction per eye because of this skew, so it needs a
+// matching pixel offset to appear fused/centered when viewed stereoscopically.
+float TBXR_GetEyeFovSkew(int eye)
+{
+	XrFovf fov = gAppState.Projections[eye].fov;
+	float tanLeft = tanf(fov.angleLeft);
+	float tanRight = tanf(fov.angleRight);
+	float span = tanRight - tanLeft;
+	if (fabs(span) < 0.0001f)
+		return 0.0f;
+	return (tanRight + tanLeft) / span;
+}
+
 #define GL_FRAMEBUFFER_SRGB               0x8DB9
 
 void TBXR_ClearFrameBuffer(int width, int height)
@@ -1851,8 +1884,9 @@ void TBXR_ClearFrameBuffer(int width, int height)
 	glScissor( 0, 0, 0, 0 );
 	glDisable( GL_SCISSOR_TEST );
 
-	//This is a bit of a hack, but we need to do this to correct for the fact that the engine uses linear RGB colorspace
-	//but openxr uses SRGB (or something, must admit I don't really understand, but adding this works to make it look good again)
+	// This disables sRGB encode on write to the (GL_SRGB8_ALPHA8) swapchain texture.
+	// The engine's own output isn't true linear light, so without this the automatic
+	// sRGB encode double-applies gamma, washing everything out / making it too bright.
 	glDisable( GL_FRAMEBUFFER_SRGB );
 }
 
@@ -1920,12 +1954,11 @@ void TBXR_submitFrame()
 	TBXR_updateProjections();
 
 	XrFovf fov = {};
-	XrPosef viewTransform[2];
+	XrPosef eyeStagePose[2];
 
 	for (int eye = 0; eye < ovrMaxNumEyes; eye++) {
 		XrPosef xfHeadFromEye = gAppState.Projections[eye].pose;
-		XrPosef xfStageFromEye = XrPosef_Multiply(gAppState.xfStageFromHead, xfHeadFromEye);
-		viewTransform[eye] = XrPosef_Inverse(xfStageFromEye);
+		eyeStagePose[eye] = XrPosef_Multiply(gAppState.xfStageFromHead, xfHeadFromEye);
         fov.angleLeft += gAppState.Projections[eye].fov.angleLeft / 2.0f;
         fov.angleRight += gAppState.Projections[eye].fov.angleRight / 2.0f;
         fov.angleUp += gAppState.Projections[eye].fov.angleUp / 2.0f;
@@ -1952,8 +1985,8 @@ void TBXR_submitFrame()
 
 			memset(&projection_layer_elements[eye], 0, sizeof(XrCompositionLayerProjectionView));
 			projection_layer_elements[eye].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-			projection_layer_elements[eye].pose = gAppState.xfStageFromHead;
-			projection_layer_elements[eye].fov = fov;
+			projection_layer_elements[eye].pose = eyeStagePose[eye];
+			projection_layer_elements[eye].fov = gAppState.Projections[eye].fov;
 			memset(&projection_layer_elements[eye].subImage, 0, sizeof(XrSwapchainSubImage));
 			projection_layer_elements[eye].subImage.swapchain =
 					frameBuffer->ColorSwapChain.Handle;

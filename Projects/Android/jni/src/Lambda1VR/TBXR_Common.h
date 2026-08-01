@@ -332,6 +332,7 @@ void VR_Shutdown();
 //Reusable Team Beef OpenXR stuff (in TBXR_Common.cpp)
 double TBXR_GetTimeInMilliSeconds();
 int TBXR_GetRefresh();
+float TBXR_GetEyeFovSkew(int eye);
 void TBXR_Recenter();
 void TBXR_InitialiseOpenXR();
 void TBXR_WaitForSessionActive();

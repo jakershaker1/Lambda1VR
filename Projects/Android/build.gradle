@@ -127,10 +127,10 @@ android {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
-    compileSdkVersion = 32
-    buildToolsVersion = '29.0.3'
+    compileSdkVersion = 34
+    buildToolsVersion = '34.0.0'
 
-    ndkVersion '25.1.8937393'
+    ndkVersion '27.2.12479018'
 }
 
 dependencies {

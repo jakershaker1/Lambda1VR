@@ -1,16 +1,19 @@
 [submodule "Projects/Android/jni/src/hlsdk-xash3d"]
 	path = Projects/Android/jni/src/hlsdk-xash3d
-	url = https://github.com/DrBeef/hlsdk-xash3d
-	branch = master
-	
+	url = https://github.com/jakershaker1/hlsdk-xash3d
+	branch = galaxy-xr-port
+
 [submodule "Projects/Android/jni/src/hlsdk-xash3d-opfor"]
 	path = Projects/Android/jni/src/hlsdk-xash3d-opfor
-	url = https://github.com/DrBeef/hlsdk-xash3d-opfor
+	url = https://github.com/jakershaker1/hlsdk-xash3d-opfor
+	branch = galaxy-xr-port
 
 [submodule "Projects/Android/jni/src/hlsdk-xash3d_aomdc"]
 	path = Projects/Android/jni/src/hlsdk-xash3d_aomdc
-	url = https://github.com/DrBeef/hlsdk-xash3d_aomdc
-	
+	url = https://github.com/jakershaker1/hlsdk-xash3d_aomdc
+	branch = galaxy-xr-port
+
 [submodule "Projects/Android/jni/src/hlsdk-xash3d_theyhunger"]
 	path = Projects/Android/jni/src/hlsdk-xash3d_theyhunger
-	url = https://github.com/DrBeef/hlsdk-xash3d_theyhunger
+	url = https://github.com/jakershaker1/hlsdk-xash3d_theyhunger
+	branch = galaxy-xr-port

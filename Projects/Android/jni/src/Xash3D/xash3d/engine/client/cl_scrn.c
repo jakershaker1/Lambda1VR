@@ -34,6 +34,7 @@ convar_t *cl_levelshot_name;
 convar_t *cl_envshot_size;
 convar_t *scr_dark;
 extern convar_t *vr_stereo_side;
+extern float TBXR_GetEyeFovSkew(int eye);
 
 typedef struct
 {
@@ -48,7 +49,13 @@ int GetStereoDepthOffset()
 	if (vr_stereo_side->value >= VR_EYE_LEFT_MONO)
 		return 0;
 
-	return (int)( ( vr_stereo_side->value * -2.0f ) + 1.0f) * (scr_width->integer / 36.0f);
+	// Shift the 2D overlay opposite to this eye's asymmetric-frustum skew, so a
+	// screen-space element drawn identically in both eyes lines up on the same
+	// real-world direction (and so fuses/centers correctly) instead of using a
+	// fixed empirical pixel offset that doesn't adapt to this headset's actual FOV.
+	int eye = (int)vr_stereo_side->value;
+	float skew = TBXR_GetEyeFovSkew(eye);
+	return (int)( -skew * (scr_width->integer / 2.0f) );
 }
 
 /*
